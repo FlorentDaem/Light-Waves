@@ -2,10 +2,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
+mode = 'vecteur'  # 'vecteur' ou 'intensite'
+
 # Paramètres de la simulation
 n_steps = 200  # Nombre d'itérations temporelles
 n_points_x = 100  # Nombre de points en x
-n_points_y = 100  # Nombre de points en y
+n_points_y = n_points_x  # Nombre de points en y
 c = 14.0  # Vitesse de la lumière
 dx = 0.1  # Espacement spatial en x
 dy = dx  # Espacement spatial en y
@@ -27,8 +29,10 @@ if stability_param <= 1.0:
     source_frequency = 6.0  # Ajustez cette valeur selon vos besoins
 
     # Initialisation du champ électromagnétique (2D)
-    E = np.zeros((n_steps, n_points_x, n_points_y))
-    E[0, source_position_x, source_position_y] = 1.0  # Source, oscillation constante
+    Ex = np.zeros((n_steps, n_points_x, n_points_y))
+    Ey = np.zeros((n_steps, n_points_x, n_points_y))
+
+    Ex[0, source_position_x, source_position_y] = 1.0  # Source, oscillation constante
 
     # Indices optiques (2D)
     n_values = np.ones((n_points_x, n_points_y))
@@ -40,28 +44,53 @@ if stability_param <= 1.0:
     alpha_values[:n_points_x // 2, :] = 0.2  # Première moitié en x avec une absorption forte
 
     # Création de la figure
-    fig, ax = plt.subplots()
-    img = ax.imshow(E[0, :, :], extent=[0, n_points_x * dx, 0, n_points_y * dy], origin='lower', cmap='viridis', vmax=0.05)
-    
+    fig, ax = plt.subplots(figsize=(8, 8))
+    fleche = ax.quiver(np.arange(n_points_x), np.arange(n_points_y), Ex[0], Ey[0], scale=2, color='b')
+
     # Fonction d'animation
     def animate(i):
-        global E
-        E[i + 1, 1:-1, 1:-1] = (
-            (c**2 * dt**2 / (dx**2 * n_values[1:-1, 1:-1]**2)) * (E[i, 2:, 1:-1] - 2 * E[i, 1:-1, 1:-1] + E[i, :-2, 1:-1]) +
-            (c**2 * dt**2 / (dy**2 * n_values[1:-1, 1:-1]**2)) * (E[i, 1:-1, 2:] - 2 * E[i, 1:-1, 1:-1] + E[i, 1:-1, :-2]) +
-            2 * E[i, 1:-1, 1:-1] - E[i - 1, 1:-1, 1:-1] - alpha_values[1:-1, 1:-1] * E[i, 1:-1, 1:-1]
+        global Ex, Ey
+        Ex[i + 1, 1:-1, 1:-1] = (
+            (c**2 * dt**2 / (dx**2 * n_values[1:-1, 1:-1]**2)) * (Ex[i, 2:, 1:-1] - 2 * Ex[i, 1:-1, 1:-1] + Ex[i, :-2, 1:-1]) +
+            (c**2 * dt**2 / (dy**2 * n_values[1:-1, 1:-1]**2)) * (Ex[i, 1:-1, 2:] - 2 * Ex[i, 1:-1, 1:-1] + Ex[i, 1:-1, :-2]) +
+            2 * Ex[i, 1:-1, 1:-1] - Ex[i - 1, 1:-1, 1:-1] - alpha_values[1:-1, 1:-1] * Ex[i, 1:-1, 1:-1]
         )
-        E[i + 1, source_position_x, source_position_y] = np.sin(2 * np.pi * source_frequency * i * dt)  # Source oscillante avec la fréquence
+        Ey[i + 1, 1:-1, 1:-1] = (
+            (c**2 * dt**2 / (dx**2 * n_values[1:-1, 1:-1]**2)) * (Ey[i, 2:, 1:-1] - 2 * Ey[i, 1:-1, 1:-1] + Ey[i, :-2, 1:-1]) +
+            (c**2 * dt**2 / (dy**2 * n_values[1:-1, 1:-1]**2)) * (Ey[i, 1:-1, 2:] - 2 * Ey[i, 1:-1, 1:-1] + Ey[i, 1:-1, :-2]) +
+            2 * Ey[i, 1:-1, 1:-1] - Ey[i - 1, 1:-1, 1:-1] - alpha_values[1:-1, 1:-1] * Ey[i, 1:-1, 1:-1]
+        )
+        Ex[i + 1, source_position_x, source_position_y] = np.sin(2 * np.pi * source_frequency * i * dt)  # Source oscillante avec la fréquence
 
-        img.set_array(E[i, :, :])
-        return img,
+        # Calcul de la norme carée du vecteur E
+        I = Ex[i + 1]**2 + Ey[i + 1]**2
+
+        # Mise à jour de la figure
+        ax.clear()
+        # Affichage du champ de vecteurs
+        if mode == 'vecteur':
+            fleche = ax.quiver(
+                np.arange(n_points_x),
+                np.arange(n_points_y),
+                Ex[i + 1],
+                Ey[i + 1],
+                color='r',
+                scale=2,
+                minlength=0
+            )
+            return fleche,
+        # Affichage de l'intensité
+        elif mode == 'intensite':
+            intensite = ax.imshow(I, extent=[0, n_points_x, 0, n_points_y], origin='lower', cmap='viridis', vmin=0, vmax=10**-3)
+            return intensite,
 
     # Animation
     ani = FuncAnimation(fig, animate, frames=n_steps - 1, interval=50, blit=True)
 
-    plt.xlabel('Position en x')
-    plt.ylabel('Position en y')
-    plt.colorbar(img, label='Champ électromagnétique')
+    ax.set_xlabel('Position en x')
+    ax.set_ylabel('Position en y')
+    ax.set_title('Champ de vecteurs Ex, Ey')
+
     plt.show()
 
 else:
