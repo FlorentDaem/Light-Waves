@@ -57,14 +57,16 @@ if stability_param <= 1.0:
         Ex[i + 1, 1:-1, 1:-1] = (
             (c**2 * dt**2 / (dx**2 * n_values[1:-1, 1:-1]**2)) * (Ex[i, 2:, 1:-1] - 2 * Ex[i, 1:-1, 1:-1] + Ex[i, :-2, 1:-1]) +
             (c**2 * dt**2 / (dy**2 * n_values[1:-1, 1:-1]**2)) * (Ex[i, 1:-1, 2:] - 2 * Ex[i, 1:-1, 1:-1] + Ex[i, 1:-1, :-2]) +
-            2 * Ex[i, 1:-1, 1:-1] - Ex[i - 1, 1:-1, 1:-1] - alpha_values[1:-1, 1:-1] * Ex[i, 1:-1, 1:-1] -
-            (c**2 * dt**2 / (2*dx * epsilon_0 * n_values[1:-1, 1:-1]**2)) * (distribution_charge[i, 2:, 1:-1] - distribution_charge[i, :-2, 1:-1])
+            2 * Ex[i, 1:-1, 1:-1] - Ex[i - 1, 1:-1, 1:-1]
+            - (c**2 * dt**2 / (n_values[1:-1, 1:-1]**2)) * alpha_values[1:-1, 1:-1] * Ex[i, 1:-1, 1:-1]
+            - (c**2 * dt**2 / (2*dx * epsilon_0 * n_values[1:-1, 1:-1]**2)) * (distribution_charge[i, 2:, 1:-1] - distribution_charge[i, :-2, 1:-1])
         )
         Ey[i + 1, 1:-1, 1:-1] = (
             (c**2 * dt**2 / (dx**2 * n_values[1:-1, 1:-1]**2)) * (Ey[i, 2:, 1:-1] - 2 * Ey[i, 1:-1, 1:-1] + Ey[i, :-2, 1:-1]) +
             (c**2 * dt**2 / (dy**2 * n_values[1:-1, 1:-1]**2)) * (Ey[i, 1:-1, 2:] - 2 * Ey[i, 1:-1, 1:-1] + Ey[i, 1:-1, :-2]) +
-            2 * Ey[i, 1:-1, 1:-1] - Ey[i - 1, 1:-1, 1:-1] - alpha_values[1:-1, 1:-1] * Ey[i, 1:-1, 1:-1] -
-            (c**2 * dt**2 / (2*dy * epsilon_0 * n_values[1:-1, 1:-1]**2)) * (distribution_charge[i, 1:-1, 2:] - distribution_charge[i, 1:-1, :-2])
+            2 * Ey[i, 1:-1, 1:-1] - Ey[i - 1, 1:-1, 1:-1]
+            - (c**2 * dt**2 / (n_values[1:-1, 1:-1]**2)) * alpha_values[1:-1, 1:-1] * Ey[i, 1:-1, 1:-1]
+            - (c**2 * dt**2 / (2*dy * epsilon_0 * n_values[1:-1, 1:-1]**2)) * (distribution_charge[i, 1:-1, 2:] - distribution_charge[i, 1:-1, :-2])
         )
         
         distribution_charge[i+1, source_position_x, source_position_y] = e
@@ -82,13 +84,13 @@ if stability_param <= 1.0:
                 Ex[i + 1],
                 Ey[i + 1],
                 color='r',
-                scale=None,
+                scale=10**-8,
                 minlength=0
             )
             return fleche,
         # Affichage de l'intensité
         elif mode == 'intensite':
-            intensite = ax.imshow(I, extent=[0, n_points_x, 0, n_points_y], origin='lower', cmap='viridis', vmin=0, vmax=10**-3)
+            intensite = ax.imshow(I, extent=[0, n_points_x, 0, n_points_y], origin='lower', cmap='viridis', vmin=0, vmax=10**-19)
             return intensite,
 
     # Animation
