@@ -8,11 +8,13 @@ mode = 'vecteur'  # 'vecteur' ou 'intensite'
 n_steps = 200  # Nombre d'itérations temporelles
 n_points_x = 100  # Nombre de points en x
 n_points_y = n_points_x  # Nombre de points en y
-c = 14.0  # Vitesse de la lumière
+c = 14.0  # Vitesse de la lumière (en m/s)
 dx = 0.1  # Espacement spatial en x
 dy = dx  # Espacement spatial en y
 dt = 0.005  # Pas de temps
 
+epsilon_0 = 8.8541878128 * 10**-12 # Constante diélectrique du vide (en F/m = C/(V.m))
+e = 1.602176634 * 10**-19  # Charge élémentaire (en C)
 
 # Calcul du paramètre de stabilité CFL
 stability_param = c * dt / (dx)
@@ -32,7 +34,9 @@ if stability_param <= 1.0:
     Ex = np.zeros((n_steps, n_points_x, n_points_y))
     Ey = np.zeros((n_steps, n_points_x, n_points_y))
 
-    Ex[0, source_position_x, source_position_y] = 1.0  # Source, oscillation constante
+    # Conditions initiales
+    distribution_charge = np.zeros((n_steps, n_points_x, n_points_y))
+    distribution_charge[0, source_position_x, source_position_y] = e  # Source
 
     # Indices optiques (2D)
     n_values = np.ones((n_points_x, n_points_y))
@@ -53,14 +57,17 @@ if stability_param <= 1.0:
         Ex[i + 1, 1:-1, 1:-1] = (
             (c**2 * dt**2 / (dx**2 * n_values[1:-1, 1:-1]**2)) * (Ex[i, 2:, 1:-1] - 2 * Ex[i, 1:-1, 1:-1] + Ex[i, :-2, 1:-1]) +
             (c**2 * dt**2 / (dy**2 * n_values[1:-1, 1:-1]**2)) * (Ex[i, 1:-1, 2:] - 2 * Ex[i, 1:-1, 1:-1] + Ex[i, 1:-1, :-2]) +
-            2 * Ex[i, 1:-1, 1:-1] - Ex[i - 1, 1:-1, 1:-1] - alpha_values[1:-1, 1:-1] * Ex[i, 1:-1, 1:-1]
+            2 * Ex[i, 1:-1, 1:-1] - Ex[i - 1, 1:-1, 1:-1] - alpha_values[1:-1, 1:-1] * Ex[i, 1:-1, 1:-1] -
+            (c**2 * dt**2 / (2*dx * epsilon_0 * n_values[1:-1, 1:-1]**2)) * (distribution_charge[i, 2:, 1:-1] - distribution_charge[i, :-2, 1:-1])
         )
         Ey[i + 1, 1:-1, 1:-1] = (
             (c**2 * dt**2 / (dx**2 * n_values[1:-1, 1:-1]**2)) * (Ey[i, 2:, 1:-1] - 2 * Ey[i, 1:-1, 1:-1] + Ey[i, :-2, 1:-1]) +
             (c**2 * dt**2 / (dy**2 * n_values[1:-1, 1:-1]**2)) * (Ey[i, 1:-1, 2:] - 2 * Ey[i, 1:-1, 1:-1] + Ey[i, 1:-1, :-2]) +
-            2 * Ey[i, 1:-1, 1:-1] - Ey[i - 1, 1:-1, 1:-1] - alpha_values[1:-1, 1:-1] * Ey[i, 1:-1, 1:-1]
+            2 * Ey[i, 1:-1, 1:-1] - Ey[i - 1, 1:-1, 1:-1] - alpha_values[1:-1, 1:-1] * Ey[i, 1:-1, 1:-1] -
+            (c**2 * dt**2 / (2*dy * epsilon_0 * n_values[1:-1, 1:-1]**2)) * (distribution_charge[i, 1:-1, 2:] - distribution_charge[i, 1:-1, :-2])
         )
-        Ex[i + 1, source_position_x, source_position_y] = np.sin(2 * np.pi * source_frequency * i * dt)  # Source oscillante avec la fréquence
+        
+        distribution_charge[i+1, source_position_x, source_position_y] = e
 
         # Calcul de la norme carée du vecteur E
         I = Ex[i + 1]**2 + Ey[i + 1]**2
@@ -75,7 +82,7 @@ if stability_param <= 1.0:
                 Ex[i + 1],
                 Ey[i + 1],
                 color='r',
-                scale=2,
+                scale=None,
                 minlength=0
             )
             return fleche,
