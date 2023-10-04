@@ -36,7 +36,7 @@ if stability_param <= 1.0:
 
     # Conditions initiales
     distribution_charge = np.zeros((n_steps, n_points_x, n_points_y))
-    distribution_charge[0, source_position_x, source_position_y] = e  # Source
+    distribution_charge[0, source_position_x, source_position_y] = e / (dx*dy)  # Source
 
     # Indices optiques (2D)
     n_values = np.ones((n_points_x, n_points_y))
@@ -69,7 +69,7 @@ if stability_param <= 1.0:
             - (c**2 * dt**2 / (2*dy * epsilon_0 * n_values[1:-1, 1:-1]**2)) * (distribution_charge[i, 1:-1, 2:] - distribution_charge[i, 1:-1, :-2])
         )
         
-        distribution_charge[i+1, source_position_x, source_position_y] = e
+        distribution_charge[i+1, source_position_x, source_position_y] = e / (dx*dy)
 
         # Calcul de la norme carée du vecteur E
         I = Ex[i + 1]**2 + Ey[i + 1]**2
@@ -84,13 +84,13 @@ if stability_param <= 1.0:
                 Ex[i + 1],
                 Ey[i + 1],
                 color='r',
-                scale=10**-8,
+                scale=10**-6,
                 minlength=0
             )
             return fleche,
         # Affichage de l'intensité
         elif mode == 'intensite':
-            intensite = ax.imshow(I, extent=[0, n_points_x, 0, n_points_y], origin='lower', cmap='viridis', vmin=0, vmax=10**-19)
+            intensite = ax.imshow(I, extent=[0, n_points_x, 0, n_points_y], origin='lower', cmap='viridis', vmin=0, vmax=10**-15)
             return intensite,
 
     # Animation
