@@ -21,7 +21,7 @@ stability_param = c * dt / (dx)
 print(f"Paramètre de stabilité CFL : {stability_param}")
 
 # Vérification de la condition de stabilité
-if stability_param <= 1.0:
+if stability_param < 1.0:
 
     # Position de la source
     source_position_x = n_points_x // 3
