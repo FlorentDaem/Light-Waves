@@ -11,9 +11,9 @@ mode = Mode.INTENSITE
 
 # Paramètres de la simulation
 n_steps = 200  # Nombre d'itérations temporelles
-n_points_x = 200  # Nombre de points en x
+n_points_x = 100  # Nombre de points en x
 n_points_y = n_points_x  # Nombre de points en y
-c = 15.0  # Vitesse de la lumière
+c = 14.0  # Vitesse de la lumière
 dx = 0.1  # Espacement spatial en x
 dy = dx  # Espacement spatial en y
 dt = 0.005  # Pas de temps
@@ -33,7 +33,7 @@ if stability_param < 1.0:
     source_position_y = n_points_y // 3
 
     # Fréquence de la source
-    source_frequency = 6.0  # Ajustez cette valeur selon vos besoins
+    source_frequency = 2e1*0  # Ajustez cette valeur selon vos besoins
 
     # Initialisation du champ électromagnétique (2D)
     Ex = np.zeros((n_steps, n_points_x, n_points_y))
@@ -51,7 +51,7 @@ if stability_param < 1.0:
     # Coefficients d'absorption (2D)
     alpha_values = np.zeros((n_points_x, n_points_y))
     alpha_values[:n_points_x // 2, :] = 0.1  # Première moitié en x avec une absorption nulle
-    alpha_values[n_points_x // 2:, :] = 0.3  # Deuxième moitié en x avec une absorption non nulle
+    alpha_values[n_points_x // 2:, :] = 0.1  # Deuxième moitié en x avec une absorption non nulle
 
     # Création de la figure
     fig, ax = plt.subplots(figsize=(8, 8))
@@ -75,6 +75,7 @@ if stability_param < 1.0:
             - (c**2 * dt**2 / (2*dy * epsilon_0 * n_values[1:-1, 1:-1]**2)) * (distribution_charge[i, 1:-1, 2:] - distribution_charge[i, 1:-1, :-2])
         )
         
+        source_position_y = int(10*np.sin(2*np.pi*source_frequency*i*dt) + n_points_y//3)
         distribution_charge[i+1, source_position_x, source_position_y] = e / (dx*dy)
 
         # Calcul de la norme carée du vecteur E
