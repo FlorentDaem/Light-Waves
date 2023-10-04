@@ -1,20 +1,25 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
+from enum import Enum
 
-mode = 'intensite'  # 'vecteur' ou 'intensite'
+class Mode(Enum):
+    VECTEUR = 1
+    INTENSITE = 2
+
+mode = Mode.INTENSITE
 
 # Paramètres de la simulation
 n_steps = 200  # Nombre d'itérations temporelles
-n_points_x = 100  # Nombre de points en x
+n_points_x = 200  # Nombre de points en x
 n_points_y = n_points_x  # Nombre de points en y
-c = 15.0  # Vitesse de la lumière (en m/s)
+c = 15.0  # Vitesse de la lumière
 dx = 0.1  # Espacement spatial en x
 dy = dx  # Espacement spatial en y
 dt = 0.005  # Pas de temps
 
-epsilon_0 = 1 # Constante diélectrique du vide (en F/m = C/(V.m))
-e = 1 # Charge élémentaire (en C)
+epsilon_0 = 1 # Constante diélectrique du vide
+e = 1 # Charge élémentaire
 
 # Calcul du paramètre de stabilité CFL
 stability_param = c * dt / (dx)
@@ -78,7 +83,7 @@ if stability_param < 1.0:
         # Mise à jour de la figure
         ax.clear()
         # Affichage du champ de vecteurs
-        if mode == 'vecteur':
+        if mode == mode.VECTEUR:
             fleche = ax.quiver(
                 np.arange(n_points_x),
                 np.arange(n_points_y),
@@ -90,7 +95,7 @@ if stability_param < 1.0:
             )
             return fleche,
         # Affichage de l'intensité
-        elif mode == 'intensite':
+        elif mode == mode.INTENSITE:
             intensite = ax.imshow(I, extent=[0, n_points_x, 0, n_points_y], origin='lower', cmap='viridis', vmin=0)
             return intensite,
 
