@@ -2,11 +2,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
-mode = 'vecteur'  # 'vecteur' ou 'intensite'
+mode = 'intensite'  # 'vecteur' ou 'intensite'
 
 # Paramètres de la simulation
 n_steps = 200  # Nombre d'itérations temporelles
-n_points_x = 100  # Nombre de points en x
+n_points_x = 300  # Nombre de points en x
 n_points_y = n_points_x  # Nombre de points en y
 c = 14.0  # Vitesse de la lumière (en m/s)
 dx = 0.1  # Espacement spatial en x
@@ -40,12 +40,13 @@ if stability_param < 1.0:
 
     # Indices optiques (2D)
     n_values = np.ones((n_points_x, n_points_y))
-    n_values[:n_points_x // 2, :] = 1.5  # Première moitié en x avec un indice différent
-    n_values[n_points_x // 2:, :] = 1.0  # Deuxième moitié en x avec un indice normal
+    n_values[:n_points_x // 2, :] = 1.0  # Première moitié en x avec un indice normal
+    n_values[n_points_x // 2:, :] = 1.5  # Deuxième moitié en x avec un indice plus grand
 
     # Coefficients d'absorption (2D)
     alpha_values = np.zeros((n_points_x, n_points_y))
-    alpha_values[:n_points_x // 2, :] = 0.2  # Première moitié en x avec une absorption forte
+    alpha_values[:n_points_x // 2, :] = 0  # Première moitié en x avec une absorption nulle
+    alpha_values[n_points_x // 2:, :] = 0.1  # Deuxième moitié en x avec une absorption non nulle
 
     # Création de la figure
     fig, ax = plt.subplots(figsize=(8, 8))
